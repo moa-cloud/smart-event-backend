@@ -4,14 +4,14 @@ import { Strategy } from 'passport-local';
 import { HttpException, Injectable } from '@nestjs/common';
 
 @Injectable()
-export class LocalStratgy extends PassportStrategy(Strategy) {
+export class LocalStratgy extends PassportStrategy(Strategy, 'local') {
   constructor(private authService: AuthService) {
-    super();
+    super({ usernameField: 'email' });
   }
 
-  validate(username: string, password: string) {
+  async validate(email: string, password: string) {
     console.log('inside local strategy');
-    const user = this.authService.signIn({ username, password });
+    const user = await this.authService.signIn({ email, password });
     if (!user) {
       throw new HttpException('Incorrect credentials', 401);
     }
