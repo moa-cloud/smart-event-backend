@@ -18,7 +18,6 @@ import { SignUPDto } from './Dto/signUp.Dto';
 import { RolesGuard } from 'src/public/guard/role.guard';
 import { Roles } from 'src/public/decorator/role.decorator';
 import { updateUserDto } from './Dto/updateUser.dto';
-import mongoose from 'mongoose';
 
 @Controller('auth')
 export class AuthController {

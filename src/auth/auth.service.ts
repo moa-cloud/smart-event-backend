@@ -1,5 +1,4 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { logInDto } from './Dto/logIn.dto';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/user.schema';
