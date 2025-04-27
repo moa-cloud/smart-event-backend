@@ -6,6 +6,7 @@ import { LocalStratgy } from './strategies/local-strategy';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, userSchema } from 'src/schemas/user.schema';
+import { RoleModule } from 'src/role/role.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { User, userSchema } from 'src/schemas/user.schema';
       secret: 'smart-event-mod-1',
       signOptions: { expiresIn: '1h' },
     }),
+    RoleModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStratgy, JwtStrategy],

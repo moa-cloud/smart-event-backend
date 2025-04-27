@@ -6,39 +6,41 @@ import { User } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
 import { SignUPDto } from './Dto/signUp.Dto';
 import * as aragon from 'argon2';
+import { Role } from 'src/schemas/role.schema';
+import { updateUserDto } from './Dto/updateUser.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Role.name) private roleModel: Model<Role>,
   ) {}
 
-  users = [
-    {
-      id: 1,
-      email: 'moa@gmail.com',
-      password: '123',
-    },
-    {
-      id: 2,
-      email: 'brad',
-      password: '1243',
-    },
-  ];
-  async signIn({ email, password }: logInDto) {
-    const findUser = await this.userModel.findOne({ email }).lean(); // Use lean() for better performance
+  async validateUser(email, password) {
+    const findUser = await this.userModel
+      .findOne({ email })
+      .populate('role')
+      .lean(); // Use lean() for better performance
 
     if (!findUser) {
-      throw new HttpException('Invalid credentials', 401);
+      return null;
     }
 
     const isPasswordValid = await aragon.verify(findUser.password, password);
     if (!isPasswordValid) {
-      throw new HttpException('Invalid credentials', 401);
+      return null;
     }
 
-    const payload = { id: findUser._id, email: findUser.email };
+    return findUser;
+  }
+
+  async generateJwtToken(user) {
+    const payload = {
+      id: user._id,
+      email: user.email,
+      role: user.role.name,
+    };
     return this.jwtService.sign(payload);
   }
 
@@ -48,11 +50,43 @@ export class AuthService {
     }
     signup.password = await aragon.hash(signup.password);
 
-    const user = await this.userModel.create(signup);
+    const defaulRole = await this.roleModel.findOne({ name: 'user' });
+
+    if (!defaulRole) {
+      throw new HttpException('Default role not found', 500);
+    }
+
+    const user = await this.userModel.create({
+      ...signup,
+      role: defaulRole.id,
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithOutPassword } = user;
+    const { password, ...userWithOutPassword } = user.toObject();
 
+    console.log(userWithOutPassword);
     return userWithOutPassword;
+  }
+
+  async updateUser(id: string, updateUserDto: updateUserDto) {
+    if (updateUserDto.password) {
+      updateUserDto.password = await aragon.hash(updateUserDto.password);
+    }
+    const user = await this.userModel
+      .findByIdAndUpdate(id, updateUserDto, {
+        new: true,
+      })
+      .populate('role');
+    // console.log(user);
+    return user;
+  }
+
+  async deletedUser(id: string) {
+    const user = await this.userModel.findByIdAndDelete(id).populate('role');
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+    // console.log(user);
+    return user;
   }
 }

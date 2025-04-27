@@ -1,4 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Role } from './role.schema';
+import mongoose from 'mongoose';
 
 @Schema()
 export class User {
@@ -13,6 +15,9 @@ export class User {
 
   @Prop({ unique: true, required: true })
   email: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Role' })
+  role: Role;
 
   @Prop({ required: true })
   phoneNumber: string;
