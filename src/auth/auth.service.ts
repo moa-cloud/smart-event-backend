@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/user.schema';
@@ -6,7 +6,7 @@ import { Model } from 'mongoose';
 import { SignUPDto } from './Dto/signUp.Dto';
 import * as aragon from 'argon2';
 import { Role } from 'src/schemas/role.schema';
-import { updateUserDto } from './Dto/updateUser.dto';
+import { UpgradeRoleDto } from './Dto/upgradeRole.dto';
 
 @Injectable()
 export class AuthService {
@@ -60,32 +60,31 @@ export class AuthService {
       role: defaulRole.id,
     });
 
+    const userWithRole = await this.userModel
+      .findOne({ _id: user._id })
+      .populate('role');
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithOutPassword } = user.toObject();
+    const { password, ...userWithOutPassword } = userWithRole.toObject();
 
     console.log(userWithOutPassword);
     return userWithOutPassword;
   }
 
-  async updateUser(id: string, updateUserDto: updateUserDto) {
-    if (updateUserDto.password) {
-      updateUserDto.password = await aragon.hash(updateUserDto.password);
-    }
-    const user = await this.userModel
-      .findByIdAndUpdate(id, updateUserDto, {
-        new: true,
-      })
-      .populate('role');
-    // console.log(user);
-    return user;
-  }
+  async upgradeRole(role: UpgradeRoleDto) {
+    const { roleName, updatedUser } = role;
 
-  async deletedUser(id: string) {
-    const user = await this.userModel.findByIdAndDelete(id).populate('role');
-    if (!user) {
-      throw new HttpException('User not found', 404);
-    }
-    // console.log(user);
-    return user;
+    const user = await this.userModel.findOne({ email: updatedUser });
+    if (!user) throw new NotFoundException("Such user doesn't exist");
+
+    const newRole = await this.roleModel.findOne({ name: roleName });
+    if (!newRole) throw new NotFoundException('Role not found');
+
+    const updated = await this.userModel.updateOne(
+      { _id: user._id },
+      { $set: { role: newRole._id } },
+    );
+
+    return { message: 'User role upgraded successfully', updated };
   }
 }

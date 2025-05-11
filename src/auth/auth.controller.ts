@@ -1,10 +1,7 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  HttpException,
-  Param,
   Patch,
   Post,
   Req,
@@ -17,7 +14,7 @@ import { JwtGuard } from './Guard/jwt-guard';
 import { SignUPDto } from './Dto/signUp.Dto';
 import { RolesGuard } from 'src/public/guard/role.guard';
 import { Roles } from 'src/public/decorator/role.decorator';
-import { updateUserDto } from './Dto/updateUser.dto';
+import { UpgradeRoleDto } from './Dto/upgradeRole.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +24,7 @@ export class AuthController {
   @UseGuards(LocalGuard) // checks if the user exsists  and attaches the user to the req obj, if not throws an exception
   signIn(@Req() req) {
     const user = req.user;
-    console.log(req.user);
+    // console.log(req.user);
     const token = this.authService.generateJwtToken(user); // generates the token using infn from the req obj
     return token;
   }
@@ -38,7 +35,7 @@ export class AuthController {
   status(@Req() req: Request) {
     console.log('inside the authcontroller status method');
     console.log(req.user);
-    //return req.user;
+    return req.user;
   }
 
   @Post('signUp')
@@ -48,30 +45,8 @@ export class AuthController {
 
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin') // or 'organizer', 'user'
-  @Get('dashboard')
-  getAdminDashboard() {
-    return 'Only admins can access this';
-  }
-
-  @UseGuards(JwtGuard)
-  @Patch(':id')
-  async updateUser(
-    @Param('id') id: string,
-    @Body() updateUserDto: updateUserDto,
-    @Req() req,
-  ) {
-    const user = req.user;
-    if (user.id !== id) throw new HttpException('invalid Id', 400);
-    const updatedUser = await this.authService.updateUser(id, updateUserDto);
-    return { message: 'User updated successfully', user: updatedUser };
-  }
-
-  @UseGuards(JwtGuard)
-  @Delete(':id')
-  async deleteUser(@Param('id') id: string, @Req() req) {
-    const user = req.user;
-    if (user.id !== id) throw new HttpException('invalid Id', 400);
-    const deletedUser = await this.authService.deletedUser(id);
-    return { message: 'User deleted successfully', user: deletedUser };
+  @Patch('roleUpgrade')
+  async upgradeRole(@Body() role: UpgradeRoleDto) {
+    return this.authService.upgradeRole(role);
   }
 }

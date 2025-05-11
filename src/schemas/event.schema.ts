@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.schema';
 import mongoose from 'mongoose';
+import { EventCatagory } from './event.catagory.schema';
 
 @Schema()
 export class event {
@@ -17,19 +18,28 @@ export class event {
   date: Date;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
-  organizer: User;
+  createdBy: User;
 
   @Prop({ required: true })
   price: number;
 
+  @Prop({ required: true })
+  totalTicket: number;
+
+  @Prop()
+  availableTicket: number;
+
   @Prop({ default: 0 })
   attendeeLimit: number;
 
-  @Prop()
-  eventImage: string;
+  @Prop({ default: [], type: [String] })
+  eventImage: string[];
 
   @Prop({ default: [], type: [String] })
   tag: string[];
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'EventCatagory' })
+  eventCatagory: EventCatagory;
 
   @Prop({ default: true })
   isActive: boolean;

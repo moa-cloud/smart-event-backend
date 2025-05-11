@@ -19,5 +19,6 @@ import { RoleModule } from 'src/role/role.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStratgy, JwtStrategy],
+  exports: [MongooseModule],
 })
 export class AuthModule {}

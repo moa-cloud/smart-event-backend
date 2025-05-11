@@ -40,5 +40,14 @@ export class createEventDto {
 
   @IsOptional()
   @IsBoolean()
-  isActive: boolean;
+  isActive?: boolean;
+
+  @IsNotEmpty()
+  @IsString()
+  eventCatagory: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  totalTicket: number;
 }
