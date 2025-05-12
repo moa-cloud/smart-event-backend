@@ -8,6 +8,9 @@ export class event {
   @Prop({ required: true })
   title: string;
 
+  @Prop({ required: false })
+  identification: string;
+
   @Prop({ required: true })
   description: string;
 
@@ -26,10 +29,10 @@ export class event {
   @Prop({ required: true })
   totalTicket: number;
 
-  @Prop()
+  @Prop({ type: Number })
   availableTicket: number;
 
-  @Prop({ default: 0 })
+  @Prop()
   attendeeLimit: number;
 
   @Prop({ default: [], type: [String] })

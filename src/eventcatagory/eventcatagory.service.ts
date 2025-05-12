@@ -11,14 +11,14 @@ export class EventcatagoryService {
     private eventCatagoryModel: Model<EventCatagory>,
   ) {}
 
-  async createEventCatagory(eventCatagory: CreateEventCatagoryDto) {
-    const { catagoryName, description } = eventCatagory;
+  async createEventCatagory(Catagory: CreateEventCatagoryDto) {
+    const { eventCatagory, description } = Catagory;
     const catagoryExsists = await this.eventCatagoryModel.findOne({
-      catagoryName: catagoryName,
+      catagoryName: eventCatagory,
     });
     if (!catagoryExsists) {
       const catagory = await this.eventCatagoryModel.create({
-        catagoryName: catagoryName,
+        catagoryName: eventCatagory,
         description,
       });
       return catagory;

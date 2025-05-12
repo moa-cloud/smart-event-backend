@@ -21,22 +21,41 @@ export class EventService {
     imageUrls: string[],
     userId,
   ) {
-    const { eventCatagory } = createEventDto;
+    const { eventCatagory, attendeeLimit, totalTicket } = createEventDto;
     const catagoryExsists = await this.eventCatagoryModel.findOne({
       catagoryName: eventCatagory,
     });
+    const catName = eventCatagory;
+    console.log(eventCatagory);
+    console.log(catagoryExsists);
 
     if (!catagoryExsists) {
+      console.log(eventCatagory);
       await this.eventCatagoryModel.create({
-        catagoryName: eventCatagory,
+        catagoryName: catName,
       });
     }
+
+    const catagoryExsists1 = await this.eventCatagoryModel.findOne({
+      catagoryName: eventCatagory,
+    });
+
     const event = await this.eventModel.create({
       ...createEventDto,
       organizer: userId,
       eventImage: imageUrls,
-      eventCatagory: catagoryExsists._id,
+      eventCatagory: catagoryExsists1._id,
+      totalTicket: createEventDto.totalTicket,
+      availableTicket: attendeeLimit,
     });
+
+    const eventId = event.id;
+
+    await this.eventModel.findByIdAndUpdate(
+      eventId,
+      { identification: eventId, availableTicket: totalTicket },
+      { new: true },
+    );
 
     const populatedEvent = await this.eventModel
       .findById(event.id)

@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Booking } from 'src/schemas/booking.schema';
 import { Model } from 'mongoose';
 import { payment } from 'src/schemas/payment.schema';
+import { event } from 'src/schemas/event.schema';
 
 @Injectable()
 export class PaymentService {
@@ -13,6 +14,7 @@ export class PaymentService {
     private readonly httpService: HttpService,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
     @InjectModel(payment.name) private paymentModel: Model<payment>,
+    @InjectModel(event.name) private eventModel: Model<event>,
   ) {}
   async initializePayment(bookingId: string) {
     const tx_ref = uuidv4();
@@ -22,7 +24,7 @@ export class PaymentService {
       .populate('event')
       .populate('user');
     if (!booking) {
-      throw new BadRequestException('Not enough tickets');
+      throw new BadRequestException('No Such Booking Available');
     }
     const availableTickets = booking.event.availableTicket;
     const amount = booking.quantity;
@@ -31,13 +33,15 @@ export class PaymentService {
       throw new BadRequestException('Not enough tickets');
     }
     const first_name = booking.user.firstName;
+    const price = booking.event.price;
     const last_name = booking.user.lastName;
     const email = booking.user.email;
     const event = booking.event.title;
+    const total = price * amount;
 
     const payload = {
       event: event,
-      amount: amount,
+      amount: total,
       currency: 'ETB',
       email: email,
       first_name: first_name,
@@ -126,11 +130,34 @@ export class PaymentService {
       .findOne({ paymentId: verified.tx_ref })
       .populate('event')
       .populate('user');
+    console.log(booking);
+    const eventId = booking.event.identification;
+    const eventone = await this.eventModel.findOne({ identification: eventId });
+    console.log(eventone);
+    console.log(eventone.identification);
+    const amount = Number(booking.quantity);
+    const available = Number(eventone.totalTicket);
+
+    // DEBUG LOGGING
+    console.log('booking:', booking);
+    console.log('availableTicket:', booking.event.availableTicket);
+    console.log('Parsed amount:', amount);
+    console.log('Parsed available:', available);
+
+    if (typeof booking.event.availableTicket === 'undefined') {
+      throw new BadRequestException('Event availableTicket is missing.');
+    }
+
+    const minusTicket1 = available - amount;
+
+    await this.eventModel.updateOne(
+      { identification: eventId },
+      { availableTicket: minusTicket1 },
+    );
     await this.bookingModel.updateOne(
       { paymentId: verified.tx_ref },
       { status: 'Paid' },
     );
-
     try {
       const paymentData = {
         tx_ref: verified.tx_ref,

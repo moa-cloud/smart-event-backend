@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class EventCatagory {
-  @Prop({ type: String })
+  @Prop({ type: String, unique: true })
   catagoryName: string;
 
   @Prop()
