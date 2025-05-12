@@ -10,5 +10,6 @@ import { bookindSchema, Booking } from 'src/schemas/booking.schema';
   ],
   providers: [BookingService],
   controllers: [BookingController],
+  exports: [MongooseModule, BookingService],
 })
 export class BookingModule {}

@@ -14,13 +14,20 @@ export class BookingService {
     createBookingDto: createBookingDto,
     userId: string,
   ): Promise<Booking> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const booking = await this.bookingModel.create({
       user: userId,
       event: createBookingDto.event,
       quantity: createBookingDto.quantity,
       status: createBookingDto.status || 'pending',
     });
-    return booking;
+    const book = await this.bookingModel
+      .findOne({
+        event: createBookingDto.event,
+      })
+      .populate('user')
+      .populate('event');
+    return book;
   }
 
   async findAll(): Promise<Booking[]> {
@@ -39,5 +46,16 @@ export class BookingService {
     );
     if (!booking) throw new NotFoundException('Booking not found');
     return booking;
+  }
+
+  async markAsPaid(bookingId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const booking = await this.bookingModel.findByIdAndUpdate(
+      bookingId,
+      {
+        status: 'confirmed',
+      },
+      { new: true },
+    );
   }
 }

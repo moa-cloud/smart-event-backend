@@ -18,7 +18,7 @@ export class Booking {
   status: string;
 
   @Prop()
-  paymentId: number;
+  paymentId: string;
 }
 
 export const bookindSchema = SchemaFactory.createForClass(Booking);

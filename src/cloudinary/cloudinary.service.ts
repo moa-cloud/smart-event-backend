@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary } from 'cloudinary';
+import { cloudinary } from './cloudinary.config';
 import { Readable } from 'stream';
 import { Express } from 'express';
 

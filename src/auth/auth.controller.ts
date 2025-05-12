@@ -15,10 +15,14 @@ import { SignUPDto } from './Dto/signUp.Dto';
 import { RolesGuard } from 'src/public/guard/role.guard';
 import { Roles } from 'src/public/decorator/role.decorator';
 import { UpgradeRoleDto } from './Dto/upgradeRole.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
   @Post('signIn')
   @UseGuards(LocalGuard) // checks if the user exsists  and attaches the user to the req obj, if not throws an exception
@@ -41,6 +45,12 @@ export class AuthController {
   @Post('signUp')
   signUp(@Body() signUp: SignUPDto) {
     return this.authService.signUp(signUp);
+  }
+
+  @Post('env')
+  env() {
+    const env = this.configService.get('CLOUDINARY_API_SECRET');
+    console.log(env);
   }
 
   @UseGuards(JwtGuard, RolesGuard)

@@ -16,6 +16,6 @@ import { EventcatagoryModule } from 'src/eventcatagory/eventcatagory.module';
   ],
   controllers: [EventController],
   providers: [EventService, CloudinaryService, OwnershipGuard],
-  exports: [EventService],
+  exports: [EventService, MongooseModule],
 })
 export class EventModule {}
