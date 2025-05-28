@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Role } from './role.schema';
 import mongoose from 'mongoose';
 
-@Schema()
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class User {
   @Prop()
   profileImage: string;
@@ -27,6 +27,12 @@ export class User {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ type: String })
+  resetToken: string;
+
+  @Prop({ type: Date })
+  resetTokenExpires: Date;
 }
 
 export const userSchema = SchemaFactory.createForClass(User);

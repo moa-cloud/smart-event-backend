@@ -17,7 +17,7 @@ export class EventcatagoryController {
 
   @Post('createCatagory')
   @UseGuards(JwtGuard, RolesGuard)
-  @Roles('organizer')
+  @Roles('organizer', 'admin')
   createEventCatagory(@Body() catagory: CreateEventCatagoryDto) {
     const eventcatagoryCreated =
       this.eventcatagoryService.createEventCatagory(catagory);
@@ -28,5 +28,12 @@ export class EventcatagoryController {
       message: 'event catagory created successfully',
       event: eventcatagoryCreated,
     };
+  }
+
+  @Post('createCatagory')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('organizer', 'admin')
+  async getAllCatagories() {
+    return this.eventcatagoryService.allCatagories();
   }
 }

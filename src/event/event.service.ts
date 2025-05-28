@@ -1,12 +1,18 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model } from 'mongoose';
 import { event } from 'src/schemas/event.schema';
 import { createEventDto } from './dto/createEvent.dto';
 import { updateEventDto } from './dto/updateEvent.dto';
 import { QueryDto } from './dto/query.dto';
 import { CreateEventCatagoryDto } from './dto/create.Event.Catagory.Dto';
 import { EventCatagory } from 'src/schemas/event.catagory.schema';
+import { Interaction } from 'src/schemas/interaction.schema';
 
 @Injectable()
 export class EventService {
@@ -14,6 +20,7 @@ export class EventService {
     @InjectModel(event.name) private eventModel: Model<event>,
     @InjectModel(EventCatagory.name)
     private eventCatagoryModel: Model<EventCatagory>,
+    @InjectModel(Interaction.name) private interactionModel: Model<Interaction>,
   ) {}
 
   async createEvent(
@@ -42,7 +49,7 @@ export class EventService {
 
     const event = await this.eventModel.create({
       ...createEventDto,
-      organizer: userId,
+      createdBy: userId,
       eventImage: imageUrls,
       eventCatagory: catagoryExsists1._id,
       totalTicket: createEventDto.totalTicket,
@@ -107,9 +114,27 @@ export class EventService {
     return ownedEvents;
   }
 
-  async findEventById(eventId) {
+  async findEventById(eventId1: any, userId1: string) {
+    if (!isValidObjectId(eventId1)) {
+      throw new BadRequestException('Invalid Event ID');
+    }
+    const event = await this.eventModel.findById(eventId1);
+
+    if (!event) {
+      throw new NotFoundException('no such event exsist');
+    }
+    await this.interactionModel.create({
+      eventId: eventId1,
+      userId: userId1,
+      interactionType: 'view',
+      weight: 1,
+    });
+    return event;
+  }
+
+  async findEventByIdForGuard(eventId) {
     const event = await this.eventModel
-      .findOne(eventId)
+      .findById(eventId)
       .populate('eventCatagory', 'createdBy');
     return event;
   }

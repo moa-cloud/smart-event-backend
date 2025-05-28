@@ -9,6 +9,8 @@ import { ConfigModule } from '@nestjs/config';
 import { EventcatagoryModule } from './eventcatagory/eventcatagory.module';
 import { BookingModule } from './booking/booking.module';
 import { PaymentModule } from './payment/payment.module';
+import { InteractionModule } from './interaction/interaction.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { PaymentModule } from './payment/payment.module';
     EventcatagoryModule,
     BookingModule,
     PaymentModule,
+    InteractionModule,
+    FeedbackModule,
   ],
   controllers: [],
   providers: [],

@@ -16,9 +16,9 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerProfileImageOptions } from 'src/multer.config';
 import { JwtGuard } from 'src/auth/Guard/jwt-guard';
-import { OwnershipGuard } from 'src/public/guard/ownership.guard';
-import { CheckOwnership } from 'src/public/decorator/check-ownership.decorator';
 import { updateUserDto } from 'src/auth/Dto/updateUser.dto';
+import { Roles } from 'src/public/decorator/role.decorator';
+import { RolesGuard } from 'src/public/guard/role.guard';
 
 @Controller('user')
 export class UserController {
@@ -28,18 +28,22 @@ export class UserController {
   ) {}
 
   @Post('upload-profile-image')
-  @UseGuards(JwtGuard, OwnershipGuard)
-  @CheckOwnership('user')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('user')
   @UseInterceptors(FileInterceptor('profileImage', multerProfileImageOptions))
   async uploadProfileImage(
     @UploadedFile() file: Express.Multer.File,
     @Req() req,
   ) {
+    console.log('inside the fun');
     const userId = req.user.sub; // assuming you extract user ID from JWT
 
     const imageUrl = await this.cloudinaryService.uploadImageToCloudinary(file);
 
-    return this.userService.updateProfileImage(userId, imageUrl);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const update = await this.userService.updateProfileImage(userId, imageUrl);
+
+    return imageUrl;
   }
 
   @UseGuards(JwtGuard)

@@ -90,6 +90,13 @@ export class EventController {
     return events;
   }
 
+  @UseGuards(JwtGuard)
+  @Get('eventById')
+  async getEventById(@Body('eventId') eventId: string, @Req() req) {
+    const userId = req.user.id;
+    return this.eventService.findEventById(eventId, userId);
+  }
+
   @Patch(':id')
   @UseGuards(JwtGuard, OwnershipGuard, RolesGuard)
   @CheckOwnership('event')

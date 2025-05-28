@@ -16,6 +16,7 @@ import { RolesGuard } from 'src/public/guard/role.guard';
 import { Roles } from 'src/public/decorator/role.decorator';
 import { UpgradeRoleDto } from './Dto/upgradeRole.dto';
 import { ConfigService } from '@nestjs/config';
+import { ResetPasswordDto } from './Dto/resetPassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -37,7 +38,6 @@ export class AuthController {
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('user')
   status(@Req() req: Request) {
-    console.log('inside the authcontroller status method');
     console.log(req.user);
     return req.user;
   }
@@ -47,16 +47,41 @@ export class AuthController {
     return this.authService.signUp(signUp);
   }
 
-  @Post('env')
-  env() {
-    const env = this.configService.get('CLOUDINARY_API_SECRET');
-    console.log(env);
-  }
-
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin') // or 'organizer', 'user'
   @Patch('roleUpgrade')
   async upgradeRole(@Body() role: UpgradeRoleDto) {
     return this.authService.upgradeRole(role);
+  }
+
+  @Get('all')
+  getAll() {
+    return this.authService.getAll();
+  }
+
+  @Get('allUsers')
+  async getAllUsers() {
+    return this.authService.getAllUsers();
+  }
+
+  @Get('allOrganizers')
+  async getAllOrganizers() {
+    return this.authService.getAllorganizers();
+  }
+
+  @Get('allAdmins')
+  async getAllAdmins() {
+    return this.authService.getAlladmins();
+  }
+
+  // auth.controller.ts
+  @Post('forgotPassword')
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('resetPassword')
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body.token, body.newPassword);
   }
 }

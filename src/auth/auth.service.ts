@@ -1,4 +1,9 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/user.schema';
@@ -7,6 +12,7 @@ import { SignUPDto } from './Dto/signUp.Dto';
 import * as aragon from 'argon2';
 import { Role } from 'src/schemas/role.schema';
 import { UpgradeRoleDto } from './Dto/upgradeRole.dto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -86,5 +92,80 @@ export class AuthService {
     );
 
     return { message: 'User role upgraded successfully', updated };
+  }
+
+  async getAll() {
+    const users = await this.userModel.find().populate('role').lean();
+    return users;
+  }
+
+  async getAllUsers() {
+    const users = await this.userModel.find().populate('role').lean();
+    return users.filter((user) => user.role?.name === 'user');
+  }
+
+  async getAllorganizers() {
+    const organizers = await this.userModel.find().populate('role').lean();
+    return organizers.filter((user) => user.role?.name === 'organizer');
+  }
+
+  async getAlladmins() {
+    const admins = await this.userModel.find().populate('role').lean();
+    return admins.filter((user) => user.role?.name === 'admin');
+  }
+
+  // auth.service.ts
+
+  async forgotPassword(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    console.log('Found user:', user);
+
+    if (!user) {
+      return { message: 'If your email exists, a reset link has been sent.' };
+    }
+
+    // Generate plain token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // Hash the token before saving
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+    const resetTokenExpires = new Date(Date.now() + 1000 * 60 * 15); // 15 minutes
+
+    // Save hashed token and expiry
+    user.resetToken = hashedToken;
+    user.resetTokenExpires = resetTokenExpires;
+    await user.save();
+
+    console.log('Saved hashed token in DB:', hashedToken);
+
+    // Send plain token in the link
+    const resetLink = `http://localhost:3000/resetPassword?token=${resetToken}`;
+    console.log(`Reset link: ${resetLink}`);
+
+    return { message: 'If your email exists, a reset link has been sent.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await this.userModel.findOne({
+      resetToken: hashedToken,
+      resetTokenExpires: { $gt: new Date() }, // Token not expired
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    user.password = await aragon.hash(newPassword);
+    user.resetToken = undefined;
+    user.resetTokenExpires = undefined;
+    await user.save();
+
+    return { message: 'Password has been reset successfully' };
   }
 }

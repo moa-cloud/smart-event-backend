@@ -3,7 +3,7 @@ import { User } from './user.schema';
 import mongoose from 'mongoose';
 import { event } from './event.schema';
 
-@Schema()
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Booking {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   user: User;

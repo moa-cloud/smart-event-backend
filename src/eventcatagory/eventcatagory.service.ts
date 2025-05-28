@@ -25,4 +25,9 @@ export class EventcatagoryService {
     }
     return catagoryExsists;
   }
+
+  async allCatagories() {
+    const catagories = await this.eventCatagoryModel.find().lean();
+    return catagories;
+  }
 }

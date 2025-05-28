@@ -22,6 +22,7 @@ export const multerProfileImageOptions: MulterOptions = {
       );
     }
 
+    console.log('inside multer');
     callback(null, true); // Accept the file
   },
 };

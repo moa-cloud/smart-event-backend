@@ -10,7 +10,7 @@ export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async updateProfileImage(userId: string, imageUrl: string) {
-    return this.userModel.findByIdAndUpdate(
+    return await this.userModel.findByIdAndUpdate(
       userId,
       { profileImage: imageUrl },
       { new: true },

@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Booking } from 'src/schemas/booking.schema';
 import { createBookingDto } from './dto/create.booking.dto';
+import { Interaction } from 'src/schemas/interaction.schema';
 
 @Injectable()
 export class BookingService {
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
+    @InjectModel(Interaction.name) private interactionModel: Model<Interaction>,
   ) {}
 
   async create(
@@ -27,6 +29,13 @@ export class BookingService {
       })
       .populate('user')
       .populate('event');
+
+    await this.interactionModel.create({
+      eventId: createBookingDto.event,
+      userId: userId,
+      interactionType: 'book',
+      weight: 2,
+    });
     return book;
   }
 

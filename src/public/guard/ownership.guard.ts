@@ -32,7 +32,7 @@ export class OwnershipGuard implements CanActivate {
 
     switch (resourceType) {
       case 'event':
-        resource = await this.eventService.findEventById(id);
+        resource = await this.eventService.findEventByIdForGuard(id);
         break;
       case 'user':
         resource = await this.userService.findUserById(id);

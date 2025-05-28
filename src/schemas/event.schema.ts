@@ -3,7 +3,7 @@ import { User } from './user.schema';
 import mongoose from 'mongoose';
 import { EventCatagory } from './event.catagory.schema';
 
-@Schema()
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class event {
   @Prop({ required: true })
   title: string;
