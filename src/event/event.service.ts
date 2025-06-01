@@ -139,6 +139,13 @@ export class EventService {
     return event;
   }
 
+  async findEventByIdForGuardForOwned(eventId) {
+    const event = await this.eventModel
+      .find({ createdBy: eventId })
+      .populate('eventCatagory', 'createdBy');
+    return event;
+  }
+
   async updateEvent(eventId: string, updateEventDto: updateEventDto) {
     const updatedEvent = await this.eventModel
       .findByIdAndUpdate(eventId, updateEventDto, { new: true })

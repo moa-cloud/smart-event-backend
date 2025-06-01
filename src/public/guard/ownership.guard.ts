@@ -27,12 +27,14 @@ export class OwnershipGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const id = request.params.id;
+    const userId = user.id;
 
     let resource: any;
 
     switch (resourceType) {
       case 'event':
-        resource = await this.eventService.findEventByIdForGuard(id);
+        resource =
+          await this.eventService.findEventByIdForGuardForOwned(userId);
         break;
       case 'user':
         resource = await this.userService.findUserById(id);
@@ -43,9 +45,16 @@ export class OwnershipGuard implements CanActivate {
 
     if (!resource) throw new NotFoundException(`${resourceType} not found`);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const ownerId = resource.createdBy?.toString() || resource._id?.toString();
-    if (ownerId !== user.id) {
-      throw new ForbiddenException(`You do not own this ${resourceType}`);
+
+    if (Array.isArray(resource) && resource.length === 1) {
+      const ownerId =
+        resource[0].createdBy?.toString() || resource[0]._id?.toString();
+      if (ownerId !== user.id) {
+        console.log('hhhh');
+        throw new ForbiddenException(`You do not own this ${resourceType}`);
+      }
     }
 
     return true;

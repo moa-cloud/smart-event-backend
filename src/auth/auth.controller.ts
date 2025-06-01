@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
+  Param,
   Patch,
   Post,
   Req,
@@ -32,6 +34,13 @@ export class AuthController {
     // console.log(req.user);
     const token = this.authService.generateJwtToken(user); // generates the token using infn from the req obj
     return token;
+  }
+
+  @Post('logout') // checks if the token is valid and attaches the user to the req obj
+  @UseGuards(JwtGuard)
+  logout(@Req() req) {
+    const userId = req.user.id; // Extract user ID from the request
+    return this.authService.logout(userId);
   }
 
   @Get('status')
@@ -83,5 +92,19 @@ export class AuthController {
   @Post('resetPassword')
   async resetPassword(@Body() body: ResetPasswordDto) {
     return this.authService.resetPassword(body.token, body.newPassword);
+  }
+
+  @Get(':sessionId')
+  async getSession(@Param('sessionId') sessionId: string) {
+    const session = await this.authService.getSession(sessionId);
+
+    if (!session) {
+      throw new NotFoundException('Session not found');
+    }
+
+    // Extract user data and token from the session
+    const { userId, token } = session;
+
+    return { userId, token }; // Return user and token
   }
 }

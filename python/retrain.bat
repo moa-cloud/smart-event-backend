@@ -1,0 +1,1 @@
+@echo off CALL C:\Users\HP\miniconda3\Scripts\activate.bat final-project python C:\Users\HP\NestjsProjects\smart-event\python\retrain_models.py

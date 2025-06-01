@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpgradeRoleDto {
   @IsString()
@@ -7,4 +7,10 @@ export class UpgradeRoleDto {
   @IsNotEmpty()
   @IsEmail()
   updatedUser: string;
+  @IsOptional()
+  organizationName?: string;
+  @IsOptional()
+  organizationAddress?: string;
+  @IsOptional()
+  phoneNumber?: string;
 }

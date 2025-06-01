@@ -11,6 +11,7 @@ import { BookingModule } from './booking/booking.module';
 import { PaymentModule } from './payment/payment.module';
 import { InteractionModule } from './interaction/interaction.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     PaymentModule,
     InteractionModule,
     FeedbackModule,
+    RecommendationModule,
   ],
   controllers: [],
   providers: [],

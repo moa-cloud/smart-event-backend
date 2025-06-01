@@ -33,6 +33,15 @@ export class User {
 
   @Prop({ type: Date })
   resetTokenExpires: Date;
+
+  @Prop({ type: String, default: '' })
+  organizationName: string;
+
+  @Prop({ type: String, default: '' })
+  organizationAddress: string;
+
+  @Prop({ type: String, default: '' })
+  organizationPhoneNumber: string;
 }
 
 export const userSchema = SchemaFactory.createForClass(User);

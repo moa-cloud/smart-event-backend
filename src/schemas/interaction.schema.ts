@@ -16,6 +16,9 @@ export class Interaction {
 
   @Prop({ required: true })
   weight: number;
+
+  @Prop({ type: Date, default: Date.now, name: 'created_at' })
+  created_at: Date;
 }
 
 export const InteractionSchema = SchemaFactory.createForClass(Interaction);

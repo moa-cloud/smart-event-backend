@@ -7,10 +7,14 @@ import { JwtStrategy } from './strategies/jwt-strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, userSchema } from 'src/schemas/user.schema';
 import { RoleModule } from 'src/role/role.module';
+import { Session, SessionSchema } from 'src/schemas/session.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: userSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: userSchema },
+      { name: Session.name, schema: SessionSchema },
+    ]),
     JwtModule.register({
       secret: 'smart-event-mod-1',
       signOptions: { expiresIn: '1h' },

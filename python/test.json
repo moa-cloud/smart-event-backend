@@ -1,0 +1,44 @@
+{
+  "userId": "user1",
+  "interactions": [
+    {
+      "user_id": "user1",
+      "event_id": "event1",
+      "interaction_type": "view",
+      "weight": 1,
+      "created_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "user_id": "user1",
+      "event_id": "event2",
+      "interaction_type": "bookmark",
+      "weight": 0.75,
+      "created_at": "2023-01-02T00:00:00Z"
+    }
+  ],
+  "events": [
+    {
+      "event_id": "event1",
+      "title": "Music Festival",
+      "description": "Annual summer music festival",
+      "location": "Central Park",
+      "category": "music",
+      "tags": ["outdoor", "summer"]
+    },
+    {
+      "event_id": "event2",
+      "title": "Tech Conference",
+      "description": "Annual technology summit",
+      "location": "Convention Center",
+      "category": "technology",
+      "tags": ["networking", "workshops"]
+    }
+  ],
+  "users": [
+    {
+      "user_id": "user1",
+      "age": 28,
+      "location": "New York"
+    }
+  ]
+}

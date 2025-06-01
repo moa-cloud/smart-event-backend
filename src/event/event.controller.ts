@@ -79,7 +79,7 @@ export class EventController {
     return events;
   }
 
-  @Get('ownedEvents')
+  @Get('ownedEvents/:id')
   @UseGuards(JwtGuard, OwnershipGuard, RolesGuard)
   @CheckOwnership('event')
   @Roles('organizer')
@@ -91,13 +91,13 @@ export class EventController {
   }
 
   @UseGuards(JwtGuard)
-  @Get('eventById')
-  async getEventById(@Body('eventId') eventId: string, @Req() req) {
+  @Get(':eventById')
+  async getEventById(@Body('eventById') eventId: string, @Req() req) {
     const userId = req.user.id;
     return this.eventService.findEventById(eventId, userId);
   }
 
-  @Patch(':id')
+  @Patch('updateEvent/:id')
   @UseGuards(JwtGuard, OwnershipGuard, RolesGuard)
   @CheckOwnership('event')
   @Roles('organizer')
