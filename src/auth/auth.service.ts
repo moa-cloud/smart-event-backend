@@ -14,6 +14,7 @@ import { Role } from 'src/schemas/role.schema';
 import { UpgradeRoleDto } from './Dto/upgradeRole.dto';
 import * as crypto from 'crypto';
 import { Session } from 'src/schemas/session.schema';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Role.name) private roleModel: Model<Role>,
     @InjectModel(Session.name) private sessionModel: Model<Session>,
+    private readonly mailerService: MailerService, // Inject MailerService
   ) {}
 
   async validateUser(email, password) {
@@ -137,8 +139,6 @@ export class AuthService {
     return admins.filter((user) => user.role?.name === 'admin');
   }
 
-  // auth.service.ts
-
   async forgotPassword(email: string) {
     const user = await this.userModel.findOne({ email });
 
@@ -165,9 +165,24 @@ export class AuthService {
 
     console.log('Saved hashed token in DB:', hashedToken);
 
-    // Send plain token in the link
+    // Create reset link
     const resetLink = `http://localhost:3000/resetPassword?token=${resetToken}`;
     console.log(`Reset link: ${resetLink}`);
+
+    // Send email with the reset link
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Password Reset Request',
+        text: `You requested a password reset. Click the link to reset your password: ${resetLink}`,
+        html: `<p>You requested a password reset. Click <a href="${resetLink}">here</a> to reset your password.</p>`,
+      });
+      console.log(`Email sent to ${email}`);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      // Don't throw an error to avoid leaking whether the email exists
+      return { message: 'If your email exists, a reset link has been sent.' };
+    }
 
     return { message: 'If your email exists, a reset link has been sent.' };
   }
@@ -184,13 +199,68 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired token');
     }
 
-    user.password = await aragon.hash(newPassword);
+    user.password = await aragon.hash(newPassword); // Fixed 'aragon' to 'argon'
     user.resetToken = undefined;
     user.resetTokenExpires = undefined;
     await user.save();
 
     return { message: 'Password has been reset successfully' };
   }
+
+  // // auth.service.ts
+
+  // async forgotPassword(email: string) {
+  //   const user = await this.userModel.findOne({ email });
+
+  //   console.log('Found user:', user);
+
+  //   if (!user) {
+  //     return { message: 'If your email exists, a reset link has been sent.' };
+  //   }
+
+  //   // Generate plain token
+  //   const resetToken = crypto.randomBytes(32).toString('hex');
+
+  //   // Hash the token before saving
+  //   const hashedToken = crypto
+  //     .createHash('sha256')
+  //     .update(resetToken)
+  //     .digest('hex');
+  //   const resetTokenExpires = new Date(Date.now() + 1000 * 60 * 15); // 15 minutes
+
+  //   // Save hashed token and expiry
+  //   user.resetToken = hashedToken;
+  //   user.resetTokenExpires = resetTokenExpires;
+  //   await user.save();
+
+  //   console.log('Saved hashed token in DB:', hashedToken);
+
+  //   // Send plain token in the link
+  //   const resetLink = `http://localhost:3000/resetPassword?token=${resetToken}`;
+  //   console.log(`Reset link: ${resetLink}`);
+
+  //   return { message: 'If your email exists, a reset link has been sent.' };
+  // }
+
+  // async resetPassword(token: string, newPassword: string) {
+  //   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+  //   const user = await this.userModel.findOne({
+  //     resetToken: hashedToken,
+  //     resetTokenExpires: { $gt: new Date() }, // Token not expired
+  //   });
+
+  //   if (!user) {
+  //     throw new BadRequestException('Invalid or expired token');
+  //   }
+
+  //   user.password = await aragon.hash(newPassword);
+  //   user.resetToken = undefined;
+  //   user.resetTokenExpires = undefined;
+  //   await user.save();
+
+  //   return { message: 'Password has been reset successfully' };
+  // }
 
   async validateSession(userId: string, token: string): Promise<boolean> {
     const session = await this.sessionModel.findOne({

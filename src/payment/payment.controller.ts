@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { InitializePaymentDto } from './dto/payment.dto';
+import { QrInputDto } from './dto/qrInput';
 
 @Controller('payment')
 export class PaymentController {
@@ -30,5 +31,11 @@ export class PaymentController {
     const saved = await this.paymentService.savePayment(verified);
 
     return { message: 'Payment processed', data: saved };
+  }
+
+  @Get('qrCode')
+  async getQRData(@Body() body: QrInputDto) {
+    const answer = await this.paymentService.qrCodeScanner(body);
+    return answer;
   }
 }

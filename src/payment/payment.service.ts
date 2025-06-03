@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,6 +11,7 @@ import { Booking } from 'src/schemas/booking.schema';
 import { Model } from 'mongoose';
 import { payment } from 'src/schemas/payment.schema';
 import { event } from 'src/schemas/event.schema';
+import { QrInputDto } from './dto/qrInput';
 
 @Injectable()
 export class PaymentService {
@@ -164,12 +169,13 @@ export class PaymentService {
         reference: verified.reference,
         amount: verified.amount,
         status: verified.status,
-        event: booking.event.title,
+        eventId: booking.event.identification,
         email: verified.email,
         first_name: verified.first_name,
         last_name: verified.last_name,
         mode: verified.mode,
         method: verified.method,
+        isScanned: 'false',
       };
 
       const payment = await this.paymentModel.create(paymentData);
@@ -181,5 +187,37 @@ export class PaymentService {
       console.error('❌ Payment saving failed:', err.message);
       throw new BadRequestException(`Payment saving failed: ${err.message}`);
     }
+  }
+
+  async qrCodeScanner(body: QrInputDto): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { eventId } = body;
+
+    // Validate input
+    if (!eventId) {
+      throw new BadRequestException('Event ID is required');
+    }
+
+    // Find payment by eventId and populate event
+    const found = await this.paymentModel
+      .findOne({ eventId: eventId })
+      .populate('eventId');
+    console.log('herefsdc', found);
+    // Check if payment exists
+    if (!found) {
+      throw new NotFoundException(`No payment found for event ID: ${eventId}`);
+    }
+
+    // Check if already scanned (assuming isScanned is on payment model)
+    if (found.isScanned) {
+      throw new BadRequestException('QR code has already been scanned');
+    }
+
+    // Update isScanned to true
+    found.isScanned = true;
+    found.updated_at = new Date().toISOString();
+    await found.save();
+
+    return 'QR code scanned successfully';
   }
 }

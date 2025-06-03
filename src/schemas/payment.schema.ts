@@ -1,4 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
+import { event } from './event.schema';
 
 @Schema()
 export class payment {
@@ -20,8 +22,8 @@ export class payment {
   @Prop({ type: String, required: true })
   email: string;
 
-  @Prop({ type: String, required: true })
-  event: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'event' })
+  eventId: event;
 
   @Prop({ type: String, required: true })
   first_name: string;
@@ -47,6 +49,9 @@ export class payment {
 
   @Prop({ type: Date, default: Date.now })
   updated_at: string;
+
+  @Prop({ type: Boolean })
+  isScanned: boolean;
 }
 
 export const paymentSchema = SchemaFactory.createForClass(payment);
